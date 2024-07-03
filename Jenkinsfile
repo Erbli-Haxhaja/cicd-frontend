@@ -92,7 +92,7 @@ pipeline {
     stage('Deploy App') {
       steps {
         withCredentials([
-          sshUserPrivateKey(credentialsId: 'your-ssh-credentials-id', keyFileVariable: 'SSH_KEY')
+          sshUserPrivateKey(credentialsId: 'SSH', keyFileVariable: 'SSH_KEY')
         ]) {
           script {
             sh """
