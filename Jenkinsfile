@@ -17,7 +17,7 @@ pipeline {
   stages {
     stage('SCM') {
       when {
-        branch 'main'
+        branch 'origin/main'
       }
       steps {
         checkout scm
