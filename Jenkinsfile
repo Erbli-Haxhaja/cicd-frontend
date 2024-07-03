@@ -127,14 +127,6 @@ pipeline {
       }
     }
   }
-
-  post {
-    failure {
-      script {
-        sendFailureEmail('Pipeline')
-      }
-    }
-  }
 }
 
 // Modified sendFailureEmail function with stageName parameter
