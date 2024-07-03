@@ -70,7 +70,7 @@ pipeline {
     stage('Build Docker Image') {
       when {
         branch 'main'
-        branch 'deploy/production'
+        branch 'production'
       }
       steps {
         script {
@@ -88,7 +88,7 @@ pipeline {
     stage('Push Docker Image') {
       when {
         branch 'main'
-        branch 'deploy/production'
+        branch 'production'
       }
       steps {
         script {
@@ -108,11 +108,11 @@ pipeline {
     }
     stage('Deploy App') {
       when {
-        branch 'deploy/production'
+        branch 'production'
       }
       steps {
         withCredentials([
-          sshUserPrivateKey(credentialsId: 'SSH', keyFileVariable: 'SSH_KEY')
+          sshUserPrivateKey(credentialsId: 'your-ssh-credentials-id', keyFileVariable: 'SSH_KEY')
         ]) {
           script {
             sh """
