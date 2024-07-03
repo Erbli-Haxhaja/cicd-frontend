@@ -138,9 +138,5 @@ pipeline {
 }
 
 def sendFailureEmail() {
-  emailext (
-    subject: "Pipeline Stage has failed.",
-    body: "The Jenkins pipeline stage has failed. Please check the details.",
-    to: "eeba.haxhaja@gmail.com"
-  )
+  emailext body: 'A Jenkins pipeline stage has failed. Please check the details.', recipientProviders: [[$class: 'DevelopersRecipientProvider'], [$class: 'RequesterRecipientProvider']], subject: 'Pipeline Stage has failed.'
 }
