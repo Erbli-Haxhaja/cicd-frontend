@@ -22,7 +22,7 @@ pipeline {
       post {
         failure {
           script {
-            sendFailureEmail()
+            sendFailureEmail('SCM')
           }
         }
       }
@@ -39,7 +39,7 @@ pipeline {
       post {
         failure {
           script {
-            sendFailureEmail()
+            sendFailureEmail('Linting')
           }
         }
       }
@@ -53,7 +53,7 @@ pipeline {
       post {
         failure {
           script {
-            sendFailureEmail()
+            sendFailureEmail('Testing')
           }
         }
       }
@@ -67,7 +67,7 @@ pipeline {
       post {
         failure {
           script {
-            sendFailureEmail()
+            sendFailureEmail('Build Docker Image')
           }
         }
       }
@@ -84,7 +84,7 @@ pipeline {
       post {
         failure {
           script {
-            sendFailureEmail()
+            sendFailureEmail('Push Docker Image')
           }
         }
       }
@@ -121,7 +121,7 @@ pipeline {
       post {
         failure {
           script {
-            sendFailureEmail()
+            sendFailureEmail('Deploy App')
           }
         }
       }
@@ -131,12 +131,13 @@ pipeline {
   post {
     failure {
       script {
-        sendFailureEmail()
+        sendFailureEmail('Pipeline')
       }
     }
   }
 }
 
-def sendFailureEmail() {
-  emailext body: 'A Jenkins pipeline stage has failed. Please check the details.', recipientProviders: [[$class: 'DevelopersRecipientProvider'], [$class: 'RequesterRecipientProvider']], subject: 'Pipeline Stage has failed.'
+// Modified sendFailureEmail function with stageName parameter
+def sendFailureEmail(String stageName) {
+  emailext body: "The '${stageName}' stage in the Jenkins pipeline has failed. Please check the details.", recipientProviders: [[$class: 'DevelopersRecipientProvider'], [$class: 'RequesterRecipientProvider']],subject: "Pipeline Failure: ${stageName} Stage"
 }
