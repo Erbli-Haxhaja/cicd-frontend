@@ -16,9 +16,6 @@ pipeline {
 
   stages {
     stage('SCM') {
-      when {
-        branch 'origin/main'
-      }
       steps {
         checkout scm
       }
@@ -31,9 +28,6 @@ pipeline {
       }
     }
     stage('Linting') {
-      when {
-        branch 'main'
-      }
       steps {
         script {
           def scannerHome = tool 'Sonarqube';
@@ -51,9 +45,6 @@ pipeline {
       }
     }
     stage('Testing') {
-      when {
-        branch 'main'
-      }
       steps {
         script {
           echo 'Running tests...'
@@ -68,10 +59,6 @@ pipeline {
       }
     }
     stage('Build Docker Image') {
-      when {
-        branch 'main'
-        branch 'production'
-      }
       steps {
         script {
           dockerImage = docker.build("${registry}:${env.BUILD_NUMBER}")
@@ -86,10 +73,6 @@ pipeline {
       }
     }
     stage('Push Docker Image') {
-      when {
-        branch 'main'
-        branch 'production'
-      }
       steps {
         script {
           docker.withRegistry('https://registry.hub.docker.com', 'docker_hub') {
@@ -107,9 +90,6 @@ pipeline {
       }
     }
     stage('Deploy App') {
-      when {
-        branch 'production'
-      }
       steps {
         withCredentials([
           sshUserPrivateKey(credentialsId: 'your-ssh-credentials-id', keyFileVariable: 'SSH_KEY')
