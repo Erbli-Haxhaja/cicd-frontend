@@ -16,6 +16,9 @@ pipeline {
 
   stages {
     stage('SCM') {
+      when {
+        branch 'main'
+      }
       steps {
         checkout scm
       }
@@ -28,6 +31,9 @@ pipeline {
       }
     }
     stage('Linting') {
+      when {
+        branch 'main'
+      }
       steps {
         script {
           def scannerHome = tool 'Sonarqube';
@@ -45,6 +51,9 @@ pipeline {
       }
     }
     stage('Testing') {
+      when {
+        branch 'main'
+      }
       steps {
         script {
           echo 'Running tests...'
@@ -59,6 +68,10 @@ pipeline {
       }
     }
     stage('Build Docker Image') {
+      when {
+        branch 'main'
+        branch 'deploy/production'
+      }
       steps {
         script {
           dockerImage = docker.build("${registry}:${env.BUILD_NUMBER}")
@@ -73,6 +86,10 @@ pipeline {
       }
     }
     stage('Push Docker Image') {
+      when {
+        branch 'main'
+        branch 'deploy/production'
+      }
       steps {
         script {
           docker.withRegistry('https://registry.hub.docker.com', 'docker_hub') {
@@ -90,34 +107,46 @@ pipeline {
       }
     }
     stage('Deploy App') {
-  steps {
-    withCredentials([
-      sshUserPrivateKey(credentialsId: 'SSH', keyFileVariable: 'SSH_KEY')
-    ]) {
-      script {
-        sh """
-          ssh -i ${SSH_KEY} -o StrictHostKeyChecking=no ec2-user@${ec2InstanceId} '
-            docker stop vuejs-frontend || true &&
-            docker rm vuejs-frontend || true &&
-            docker pull ${registry}:latest &&
-            docker run -d --name vuejs-frontend -p 80:80 ${registry}:latest
-          '
-        """
+      when {
+        branch 'deploy/production'
+      }
+      steps {
+        withCredentials([
+          sshUserPrivateKey(credentialsId: 'SSH', keyFileVariable: 'SSH_KEY')
+        ]) {
+          script {
+            sh """
+              ssh -i ${SSH_KEY} -o StrictHostKeyChecking=no ec2-user@${ec2InstanceId} '
+                docker stop vuejs-frontend || true &&
+                docker rm vuejs-frontend || true &&
+                docker pull ${registry}:latest &&
+                docker run -d --name vuejs-frontend -p 80:80 ${registry}:latest
+              '
+            """
+          }
+        }
+      }
+      post {
+        failure {
+          script {
+            sendFailureEmail('Deploy App')
+          }
+        }
       }
     }
   }
+
   post {
     failure {
       script {
-        sendFailureEmail('Deploy App')
+        sendFailureEmail('Pipeline')
       }
     }
   }
 }
-  }
-}
 
-// Modified sendFailureEmail function with stageName parameter
 def sendFailureEmail(String stageName) {
-  emailext body: "The '${stageName}' stage in the Jenkins pipeline has failed. Please check the details.", recipientProviders: [[$class: 'DevelopersRecipientProvider'], [$class: 'RequesterRecipientProvider']],subject: "Pipeline Failure: ${stageName} Stage"
+  emailext body: "The '${stageName}' stage in the Jenkins pipeline has failed. Please check the details.",
+          recipientProviders: [[$class: 'DevelopersRecipientProvider'], [$class: 'RequesterRecipientProvider']],
+          subject: "Pipeline Failure: ${stageName} Stage"
 }
