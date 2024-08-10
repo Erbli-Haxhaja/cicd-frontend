@@ -9,9 +9,6 @@ pipeline {
   environment {
     NODE_ENV = "production"
     registry = 'eeba19/cicd-frontend'
-    blueContainerName = 'frontend-blue'
-    greenContainerName = 'frontend-green'
-    ec2InstanceId = 'i-0d201d57392da5b64'
   }
 
   stages {
@@ -91,19 +88,8 @@ pipeline {
     }
     stage('Deploy App') {
       steps {
-        withCredentials([
-          sshUserPrivateKey(credentialsId: 'SSH', keyFileVariable: 'SSH_KEY')
-        ]) {
-          script {
-            sh """
-              ssh -i ${SSH_KEY} -o StrictHostKeyChecking=no ec2-user@${ec2InstanceId} '
-                docker stop vuejs-frontend || true &&
-                docker rm vuejs-frontend || true &&
-                docker pull ${registry}:latest &&
-                docker run -d --name vuejs-frontend -p 80:80 ${registry}:latest
-              '
-            """
-          }
+        script {
+          echo 'Deploying app'
         }
       }
       post {
@@ -115,7 +101,6 @@ pipeline {
       }
     }
   }
-
   post {
     failure {
       script {
