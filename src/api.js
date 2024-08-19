@@ -44,7 +44,7 @@ const undoneTodo = async (id) => {
 
 const registerUser = async (username, password) => {
   try {
-    let res = await axios.post(`${baseURL}/register`, { username, password });
+    let res = await axios.post(`${baseURL}/users/register`, { username, password });
     return res.data;
   } catch (error) {
     console.error("Error registering user:", error);
@@ -54,7 +54,7 @@ const registerUser = async (username, password) => {
 
 const loginUser = async (username, password) => {
   try {
-    let res = await axios.post(`${baseURL}/login`, { username, password });
+    let res = await axios.post(`${baseURL}/users/login`, { username, password });
     return res.data;
   } catch (error) {
     console.error("Error logging in user:", error);
