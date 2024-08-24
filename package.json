@@ -9,6 +9,7 @@
   },
   "dependencies": {
     "axios": "^1.2.0",
+    "posthog-js": "^1.157.2",
     "vue": "^3.2.45",
     "vue-router": "^4.0.13"
   },

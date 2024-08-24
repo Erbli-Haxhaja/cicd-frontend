@@ -24,13 +24,57 @@ export default {
     return {
       username: '',
       password: '',
-      headline: Math.random() < 0.5 ? 'Join Us Today!' : 'Become a Member!',
-      buttonClass: Math.random() < 0.5 ? 'button-style-a' : 'button-style-b'
+      headline: 'Welcome!', // Default headline, will be overridden by feature flag
+      buttonClass: 'button-style-default' // Default button style, will be overridden by feature flag
     }
   },
+  async created() {
+    await this.setupFeatures();
+  },
   methods: {
+    async setupFeatures() {
+  try {
+    // Access PostHog instance from global properties
+    const posthog = this.$posthog;
+
+    if (!posthog) {
+      throw new Error("PostHog instance is not available.");
+    }
+
+    // Fetch headline variation feature flag
+    const headlineVariant = posthog.getFeatureFlag('headline_variation');
+    if (headlineVariant === 'variant-a') {
+      this.headline = 'Join Us Today!';
+    } else if (headlineVariant === 'variant-b') {
+      this.headline = 'Become a Member!';
+    }
+
+    // Fetch button color variation feature flag
+    const buttonVariant = posthog.getFeatureFlag('register_button');
+    if (buttonVariant === 'variant-a') {
+      this.buttonClass = 'button-style-a'; // Blue button
+    } else if (buttonVariant === 'variant-b') {
+      this.buttonClass = 'button-style-b'; // Green button
+    }
+
+    // Track which variant the user is seeing
+    posthog.capture('view_register_page', {
+      headline_variant: this.headline,
+      button_color_variant: this.buttonClass,
+    });
+
+  } catch (error) {
+    console.error("Error setting up features:", error);
+  }
+},
     async register() {
       try {
+        // Track the registration attempt
+        this.$posthog.capture('click_register_button', {
+          button_color: this.buttonClass,
+          headline: this.headline,
+        });
+
         await registerUser(this.username, this.password);
         this.$router.push('/login');
       } catch (error) {
@@ -85,6 +129,10 @@ button {
 
 .button-style-b {
   background-color: green;
+}
+
+.button-style-default {
+  background-color: gray;
 }
 
 button:hover {
